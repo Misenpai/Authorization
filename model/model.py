@@ -25,7 +25,7 @@ class user_model():
             return make_response({"message":"no data in the database"},204)
         
     def user_add_model(self,data):
-        self.curr.execute(f"INSERT INTO users (name,email,phone,password) VALUES('{data['name']}','d{data['email']}','{data['phone']}','{data['password']}')")
+        self.curr.execute(f"INSERT INTO users (name,email,password) VALUES('{data['name']}','d{data['email']}','{data['password']}')")
         print(data)
         return make_response({"message":"Successfully added the user"},200)
     
@@ -90,3 +90,10 @@ class user_model():
             return make_response({"token":jwt_token}, 200)
         else:
             return make_response({"message":"NO SUCH USER"}, 204)
+        
+    def upload_phone_model(self,uid,data):
+        self.curr.execute(f"UPDATE users SET phone = '{data['phone']}' WHERE id={uid}")
+        if self.curr.rowcount>0:
+            return make_response({"message":"User Successfully updated"},200)
+        else:
+            return make_response({"message":"Error Occurred"},204)

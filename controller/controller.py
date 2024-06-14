@@ -24,6 +24,7 @@ def user_updateuser_controller():
     return obj.user_update_model(request.form)
 
 @app.route("/user/delete/<id>",methods=["DELETE"])
+@auth.token_auth("/user/delete/<id>")
 def user_deleteuser_controller(id):
     return obj.user_delete_model(id)
 
@@ -37,8 +38,8 @@ def user_patchuser_controller():
 def pagination_controller(pno,limit):
     return obj.pagination_model(pno,limit)
 
-@app.route("/users/<uid>/avatar/upload",methods=["PUT"])
-@auth.token_auth("/users/<uid>/avatar/upload")
+@app.route("/user/<uid>/avatar/upload",methods=["PUT"])
+@auth.token_auth("/user/<uid>/avatar/upload")
 def upload_avatar_controller(uid):
     file = request.files['avatar']
     uniqueFileName = str(datetime.now().timestamp()).replace(".","")
@@ -57,3 +58,8 @@ def user_get_avatar_controller(filename):
 @app.route("/user/login",methods=["POST"])
 def user_login():
     return obj.user_login_model(request.form)
+
+@app.route("/user/<uid>/phone/update",methods=["PUT"])
+@auth.token_auth("/user/<uid>/phone/update")
+def upload_phone_controller(uid):
+    return obj.upload_phone_model(uid,request.form)
