@@ -63,3 +63,7 @@ def user_login():
 @auth.token_auth("/user/<uid>/phone/update")
 def upload_phone_controller(uid):
     return obj.upload_phone_model(uid,request.form)
+
+@app.route("/user/signup",methods=["POST"])
+def user_signup():
+    return obj.user_signup_model(request.form)
