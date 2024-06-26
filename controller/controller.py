@@ -67,3 +67,14 @@ def upload_phone_controller(uid):
 @app.route("/user/signup",methods=["POST"])
 def user_signup():
     return obj.user_signup_model(request.form)
+
+
+@app.route("/user/anime/status", methods=["POST"])
+@auth.token_auth("/user/anime/status")
+def update_anime_status_controller():
+    return obj.update_anime_status_model(request.form)
+
+@app.route("/user/anime/status/<user_id>/<status>", methods=["GET"])
+@auth.token_auth("/user/anime/status/<user_id>/<status>")
+def get_anime_by_status_controller(user_id, status):
+    return obj.get_anime_by_status_model(user_id, status)
