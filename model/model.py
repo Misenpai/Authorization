@@ -98,16 +98,16 @@ class user_model():
             return make_response({"message":"Error Occurred"},204)
         
     def user_signup_model(self,data):
-        self.curr.execute(f"SELECT id, role_id, avatar, email, name, phone from users WHERE email='{data['email']}' and password='{data['password']}'")
+        self.curr.execute(f"INSERT INTO users (name,email,password) VALUES('{data['name']}','{data['email']}','{data['password']}')")
+        self.curr.execute(f"SELECT id, role_id, avatar, email, name, phone FROM users WHERE email='{data['email']}' AND password='{data['password']}'")
         result = self.curr.fetchall()
-        if len(result)==1:
-            data = {
-                "payload":result[0],
-                "issued_at":datetime.now().timestamp()
+        if len(result) == 1:
+            user_data = {
+                "payload": result[0],
+                "issued_at": datetime.now().timestamp()
             }
-            print(data)
-
-            jwt_token = jwt.encode(data, "Sumit", algorithm="HS256")
-            return make_response({"token":jwt_token,"result":data}, 200)
+            print(user_data)
+            jwt_token = jwt.encode(user_data, "Sumit", algorithm="HS256")
+            return make_response({"token": jwt_token, "result": user_data}, 200)
         else:
-            return make_response({"message":"NO SUCH USER"}, 204)
+            return make_response({"message": "NO SUCH USER"}, 204)
