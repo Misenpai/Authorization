@@ -79,15 +79,14 @@ class user_model():
         self.curr.execute(f"SELECT id, role_id, avatar, email, name, phone from users WHERE email='{data['email']}' and password='{data['password']}'")
         result = self.curr.fetchall()
         if len(result)==1:
-            exptime = datetime.now() + timedelta(minutes=60)
-            exp_epoc_time = exptime.timestamp()
             data = {
                 "payload":result[0],
-                "exp_time":int(exp_epoc_time)
+                "issued_at":datetime.now().timestamp()
             }
+            print(data)
 
             jwt_token = jwt.encode(data, "Sumit", algorithm="HS256")
-            return make_response({"token":jwt_token}, 200)
+            return make_response({"token":jwt_token,"result":data}, 200)
         else:
             return make_response({"message":"NO SUCH USER"}, 204)
         
@@ -97,3 +96,72 @@ class user_model():
             return make_response({"message":"User Successfully updated"},200)
         else:
             return make_response({"message":"Error Occurred"},204)
+        
+    def user_signup_model(self,data):
+        self.curr.execute(f"INSERT INTO users (name,email,password) VALUES('{data['name']}','{data['email']}','{data['password']}')")
+        self.curr.execute(f"SELECT id, role_id, avatar, email, name, phone FROM users WHERE email='{data['email']}' AND password='{data['password']}'")
+        result = self.curr.fetchall()
+        if len(result) == 1:
+            user_data = {
+                "payload": result[0],
+                "issued_at": datetime.now().timestamp()
+            }
+            print(user_data)
+            jwt_token = jwt.encode(user_data, "Sumit", algorithm="HS256")
+            return make_response({"token": jwt_token, "result": user_data}, 200)
+        else:
+            return make_response({"message": "NO SUCH USER"}, 204)
+        
+
+    def insert_anime_status(self, data):
+        try:
+            self.curr.execute("""
+                INSERT INTO user_anime_status (user_id, anime_name, total_watched_episodes, total_episodes, status)
+                VALUES (%s, %s, %s, %s, %s)
+            """, (data['user_id'], data['anime_name'], data['total_watched_episodes'], data['total_episodes'], data['status']))
+            return make_response({"message": "Anime status added successfully"}, 201)
+        except Exception as e:
+            return make_response({"error": str(e)}, 500)
+
+    def update_anime_status(self, data):
+        try:
+            self.curr.execute("""
+                UPDATE user_anime_status
+                SET total_watched_episodes = %s, status = %s
+                WHERE user_id = %s AND anime_name = %s
+            """, (data['total_watched_episodes'], data['status'], data['user_id'], data['anime_name']))
+            if self.curr.rowcount > 0:
+                return make_response({"message": "Anime status updated successfully"}, 200)
+            else:
+                return make_response({"message": "No matching record found"}, 404)
+        except Exception as e:
+            return make_response({"error": str(e)}, 500)
+
+    def remove_anime_status(self, user_id, anime_name):
+        try:
+            self.curr.execute("""
+                DELETE FROM user_anime_status
+                WHERE user_id = %s AND anime_name = %s
+            """, (user_id, anime_name))
+            if self.curr.rowcount > 0:
+                return make_response({"message": "Anime status removed successfully"}, 200)
+            else:
+                return make_response({"message": "No matching record found"}, 404)
+        except Exception as e:
+            return make_response({"error": str(e)}, 500)
+
+    def read_anime_status(self, user_id, status):
+        try:
+            self.curr.execute("""
+                SELECT anime_name, total_watched_episodes, total_episodes
+                FROM user_anime_status
+                WHERE user_id = %s AND status = %s
+            """, (user_id, status))
+            result = self.curr.fetchall()
+            if result:
+                return make_response({"animes": result}, 200)
+            else:
+                return make_response({"message": "No anime found with the given status"}, 404)
+        except Exception as e:
+            return make_response({"error": str(e)}, 500)
+        

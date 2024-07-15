@@ -8,7 +8,7 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 class auth_model():
 
-    def __init__(self):
+    def init(self):
         self.conn = psycopg2.connect(host=dbconfig['host'],user = dbconfig['username'], password = dbconfig['password'], database = dbconfig['database'],port = dbconfig['port'])
         self.conn.autocommit = True
         self.curr = self.conn.cursor(cursor_factory=RealDictCursor)
@@ -16,7 +16,7 @@ class auth_model():
     def token_auth(self, endpoint):
         def inner1(func):
             @wraps(func)
-            def inner2(*args, **kwargs):
+            def inner2(*args, kwargs):
                 authorization = request.headers.get("authorization")
                 if re.match("^Bearer *([^ ]+) *$", authorization, flags=0):
                     token = authorization.split(" ")[1]
@@ -31,7 +31,7 @@ class auth_model():
                     if len(result) > 0:
                         roles_allowed = json.loads(result[0]['roles'])
                         if current_role in roles_allowed:
-                            return func(*args, **kwargs)
+                            return func(*args, kwargs)
                         else:
                             return make_response({"ERROR": "INVALID_ROLE"}, 422)
                     else:
