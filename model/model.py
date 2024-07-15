@@ -112,7 +112,6 @@ class user_model():
         else:
             return make_response({"message": "NO SUCH USER"}, 204)
         
-<<<<<<< HEAD
 
     def insert_anime_status(self, data):
         try:
@@ -166,7 +165,6 @@ class user_model():
         except Exception as e:
             return make_response({"error": str(e)}, 500)
         
-=======
     def update_anime_status_model(self, data):
         self.curr.execute(
             """
@@ -192,4 +190,3 @@ class user_model():
             return make_response({"result": result}, 200)
         else:
             return make_response({"message": "No data found"}, 204)
->>>>>>> 8b220647c9767aab4296725df42bf508fa9b6f63
