@@ -112,6 +112,7 @@ class user_model():
         else:
             return make_response({"message": "NO SUCH USER"}, 204)
         
+<<<<<<< HEAD
 
     def insert_anime_status(self, data):
         try:
@@ -165,3 +166,30 @@ class user_model():
         except Exception as e:
             return make_response({"error": str(e)}, 500)
         
+=======
+    def update_anime_status_model(self, data):
+        self.curr.execute(
+            """
+            INSERT INTO user_anime_status (user_id, anime_id, status) 
+            VALUES (%s, %s, %s)
+            ON CONFLICT (user_id, anime_id) 
+            DO UPDATE SET status = %s, updated_at = CURRENT_TIMESTAMP
+            """,
+            (data['user_id'], data['anime_id'], data['status'], data['status'])
+        )
+        if self.curr.rowcount > 0:
+            return make_response({"message": "Status updated successfully"}, 200)
+        else:
+            return make_response({"message": "Error occurred while updating status"}, 500)
+
+    def get_anime_by_status_model(self, user_id, status):
+        self.curr.execute(
+            "SELECT * FROM user_anime_status WHERE user_id = %s AND status = %s",
+            (user_id, status)
+        )
+        result = self.curr.fetchall()
+        if result:
+            return make_response({"result": result}, 200)
+        else:
+            return make_response({"message": "No data found"}, 204)
+>>>>>>> 8b220647c9767aab4296725df42bf508fa9b6f63

@@ -62,31 +62,3 @@ def user_login():
 @auth.token_auth("/user/<uid>/phone/update")
 def upload_phone_controller(uid):
     return obj.upload_phone_model(uid,request.form)
-
-@app.route("/user/signup",methods=["POST"])
-def user_signup():
-    return obj.user_signup_model(request.form)
-
-@app.route("/user/anime/status", methods=["POST"])
-def insert_anime_status_controller():
-    if request.is_json:
-        data = request.json
-    else:
-        data = request.form.to_dict()
-    return obj.insert_anime_status(data)
-
-@app.route("/user/anime/status", methods=["PUT"])
-def update_anime_status_controller():
-    if request.is_json:
-        data = request.json
-    else:
-        data = request.form.to_dict()
-    return obj.update_anime_status(data)
-
-@app.route("/user/anime/status/<int:user_id>/<string:anime_name>", methods=["DELETE"])
-def remove_anime_status_controller(user_id, anime_name):
-    return obj.remove_anime_status(user_id, anime_name)
-
-@app.route("/user/anime/status/<int:user_id>/<string:status>", methods=["GET"])
-def read_anime_status_controller(user_id, status):
-    return obj.read_anime_status(user_id, status)
