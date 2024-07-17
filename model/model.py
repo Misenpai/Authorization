@@ -116,9 +116,9 @@ class user_model():
     def insert_anime_status(self, data):
         try:
             self.curr.execute("""
-                INSERT INTO user_anime_status (user_id, anime_name, total_watched_episodes, total_episodes, status)
-                VALUES (%s, %s, %s, %s, %s)
-            """, (data['user_id'], data['anime_name'], data['total_watched_episodes'], data['total_episodes'], data['status']))
+                INSERT INTO user_anime_status (user_id,mal_id, anime_name, total_watched_episodes, total_episodes, status)
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """, (data['user_id'],data['mal_id'], data['anime_name'], data['total_watched_episodes'], data['total_episodes'], data['status']))
             return make_response({"message": "Anime status added successfully"}, 201)
         except Exception as e:
             return make_response({"error": str(e)}, 500)
@@ -128,8 +128,8 @@ class user_model():
             self.curr.execute("""
                 UPDATE user_anime_status
                 SET total_watched_episodes = %s, status = %s
-                WHERE user_id = %s AND anime_name = %s
-            """, (data['total_watched_episodes'], data['status'], data['user_id'], data['anime_name']))
+                WHERE user_id = %s AND mal_id = %s
+            """, (data['total_watched_episodes'], data['status'], data['user_id'],data['mal_id']))
             if self.curr.rowcount > 0:
                 return make_response({"message": "Anime status updated successfully"}, 200)
             else:
@@ -141,7 +141,7 @@ class user_model():
         try:
             self.curr.execute("""
                 DELETE FROM user_anime_status
-                WHERE user_id = %s AND anime_name = %s
+                WHERE user_id = %s AND mal_id = %s
             """, (user_id, anime_name))
             if self.curr.rowcount > 0:
                 return make_response({"message": "Anime status removed successfully"}, 200)
@@ -153,7 +153,7 @@ class user_model():
     def read_anime_status(self, user_id, status):
         try:
             self.curr.execute("""
-                SELECT anime_name, total_watched_episodes, total_episodes
+                SELECT mal_id, anime_name, total_watched_episodes, total_episodes
                 FROM user_anime_status
                 WHERE user_id = %s AND status = %s
             """, (user_id, status))
