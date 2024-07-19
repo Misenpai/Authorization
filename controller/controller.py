@@ -83,10 +83,14 @@ def update_anime_status_controller():
         data = request.form.to_dict()
     return obj.update_anime_status(data)
 
-@app.route("/user/anime/status/<int:user_id>/<string:anime_name>", methods=["DELETE"])
-def remove_anime_status_controller(user_id, anime_name):
-    return obj.remove_anime_status(user_id, anime_name)
+@app.route("/user/anime/status/<int:user_id>/<string:mal_id>", methods=["DELETE"])
+def remove_anime_status_controller(user_id, mal_id):
+    return obj.remove_anime_status(user_id, mal_id)
 
 @app.route("/user/anime/status/<int:user_id>/<string:status>", methods=["GET"])
 def read_anime_status_controller(user_id, status):
     return obj.read_anime_status(user_id, status)
+
+@app.route("/user/anime/status/<int:user_id>/<int:mal_id>", methods=["GET"])
+def check_anime_status_controller(user_id, mal_id):
+    return obj.check_anime_status(user_id, mal_id)
