@@ -1,7 +1,9 @@
+import os
+
 dbconfig = {
-    "host":"ep-withered-star-a5m13q52.us-east-2.aws.neon.tech",
-    "username":"neondb_owner",
-    "password":"W1cI2zJUduvM",
-    "database":"neondb",
-    "port":"5432"
+    "host": os.environ.get('NEON_HOST'),
+    "username": os.environ.get('NEON_USERNAME'),
+    "password": os.environ.get('NEON_PASSWORD'),
+    "database": os.environ.get('NEON_DATABASE'),
+    "port": os.environ.get('NEON_PORT')
 }

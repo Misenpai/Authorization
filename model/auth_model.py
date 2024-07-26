@@ -1,4 +1,3 @@
-from logging import exception
 import jwt
 from flask import make_response, request, json
 import re
@@ -6,6 +5,7 @@ from functools import wraps
 from config.config import dbconfig
 import psycopg2
 from psycopg2.extras import RealDictCursor
+
 class auth_model():
     def __init__(self):
         try:
@@ -14,7 +14,8 @@ class auth_model():
                 user=dbconfig['username'],
                 password=dbconfig['password'],
                 database=dbconfig['database'],
-                port=dbconfig['port']
+                port=dbconfig['port'],
+                sslmode='require'
             )
             self.conn.autocommit = True
             print("Successfully Connected to Auth Database")
@@ -23,7 +24,7 @@ class auth_model():
 
     def get_cursor(self):
         if self.conn.closed:
-            self.__init__() 
+            self.__init__()
         return self.conn.cursor(cursor_factory=RealDictCursor)
 
     def token_auth(self, endpoint):

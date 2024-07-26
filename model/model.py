@@ -1,10 +1,9 @@
 from flask import make_response
-from datetime import datetime,timedelta
+from datetime import datetime, timedelta
 import jwt
 from config.config import dbconfig
 import psycopg2
 from psycopg2.extras import RealDictCursor
-
 
 class user_model():
     def __init__(self):
@@ -14,7 +13,8 @@ class user_model():
                 user=dbconfig['username'],
                 password=dbconfig['password'],
                 database=dbconfig['database'],
-                port=dbconfig['port']
+                port=dbconfig['port'],
+                sslmode='require'
             )
             self.conn.autocommit = True
             print("Successfully Connected")
@@ -54,13 +54,33 @@ class user_model():
             else:
                 return make_response({"message": "Error occurred while updating the user"}, 204)
 
-    def user_delete_model(self, id):
+    def user_delete_model(self, data):
         with self.get_cursor() as curr:
-            curr.execute("DELETE FROM users WHERE id=%s", (id,))
-            if curr.rowcount > 0:
-                return make_response({"message": "Successfully deleted the user"}, 200)
+            # First, verify the user's credentials
+            curr.execute("SELECT id FROM users WHERE email=%s AND password=%s", (data['email'], data['password']))
+            user = curr.fetchone()
+            
+            if user:
+                try:
+                    # Start a transaction
+                    curr.execute("BEGIN")
+                    
+                    # Delete related records in user_anime_status
+                    curr.execute("DELETE FROM user_anime_status WHERE user_id=%s", (user['id'],))
+                    
+                    # Delete the user
+                    curr.execute("DELETE FROM users WHERE id=%s", (user['id'],))
+                    
+                    # Commit the transaction
+                    curr.execute("COMMIT")
+                    
+                    return make_response({"message": "Successfully deleted the user and related records"}, 200)
+                except Exception as e:
+                    # If any error occurs, rollback the transaction
+                    curr.execute("ROLLBACK")
+                    return make_response({"message": f"Error while deleting the user: {str(e)}"}, 500)
             else:
-                return make_response({"message": "Error while deleting the user"}, 204)
+                return make_response({"message": "Invalid email or password"}, 401)
 
     def user_patchuser_model(self, data):
         qry = "UPDATE users SET "
@@ -123,18 +143,31 @@ class user_model():
 
     def user_signup_model(self, data):
         with self.get_cursor() as curr:
-            curr.execute("INSERT INTO users (name, email, password) VALUES (%s, %s, %s)", (data['name'], data['email'], data['password']))
-            curr.execute("SELECT id, role_id, avatar, email, name, phone FROM users WHERE email=%s AND password=%s", (data['email'], data['password']))
+            # First, check if the email already exists
+            curr.execute("SELECT id FROM users WHERE email = %s", (data['email'],))
+            existing_user = curr.fetchone()
+            
+            if existing_user:
+                return make_response({"message": "Email already registered"}, 409)
+            
+            # If email doesn't exist, proceed with signup
+            curr.execute("INSERT INTO users (name, email, password) VALUES (%s, %s, %s)", 
+                         (data['name'], data['email'], data['password']))
+            
+            # Fetch the newly created user
+            curr.execute("SELECT id, role_id, avatar, email, name, phone FROM users WHERE email=%s AND password=%s", 
+                         (data['email'], data['password']))
             result = curr.fetchone()
+        
         if result:
             user_data = {
                 "payload": result,
                 "issued_at": datetime.now().timestamp()
             }
             jwt_token = jwt.encode(user_data, "Sumit", algorithm="HS256")
-            return make_response({"token": jwt_token, "result": user_data}, 200)
+            return make_response({"token": jwt_token, "result": user_data}, 201)
         else:
-            return make_response({"message": "NO SUCH USER"}, 204)
+            return make_response({"message": "Error occurred during signup"}, 500)
 
     def insert_anime_status(self, data):
         try:
